@@ -24,9 +24,9 @@ If that completes OK, you should be able to ping all the hosts from all the othe
 
 ```bash
 ubuntu@trusty1:~$ ip ro sh
-default via 104.193.173.17 dev eth0
+default via x.y.z.17 dev eth0
 10.0.0.0/24 dev tun0  proto kernel  scope link  src 10.0.0.21
-104.193.173.16/28 dev eth0  proto kernel  scope link  src 104.193.173.21
+x.y.z.16/28 dev eth0  proto kernel  scope link  src x.y.z.21
 ubuntu@trusty1:~$ ping -c 1 -w 1 10.0.0.23
 PING 10.0.0.23 (10.0.0.23) 56(84) bytes of data.
 64 bytes from 10.0.0.23: icmp_seq=1 ttl=64 time=0.751 ms
