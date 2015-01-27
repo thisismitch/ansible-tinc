@@ -1,0 +1,8 @@
+Name = {{ ansible_hostname }}
+AddressFamily = ipv4
+Interface = tun0
+{% for host in groups['all'] %}
+{% if ansible_hostname != hostvars[host]['ansible_hostname'] %}
+ConnectTo = {{ hostvars[host]['ansible_hostname'] }}
+{% endif %}
+{% endfor %}

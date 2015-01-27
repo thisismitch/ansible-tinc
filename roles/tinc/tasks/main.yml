@@ -1,0 +1,109 @@
+---
+
+- name: ensure custom facts directory exists
+  file: >
+    path=/etc/ansible/facts.d
+    recurse=yes
+    state=directory
+
+- name: install custom fact module for IP address
+  template: >
+    src=tinc_facts.sh.j2
+    dest=/etc/ansible/facts.d/tinc_facts.fact
+    mode=0755
+
+- name: reload ansible_local
+  setup: filter=ansible_local
+
+- debug: msg="{{ ansible_local.tinc_facts.vpn_ip }}"
+
+- name: install tinc
+  apt: >
+    name=tinc
+    state=present
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: ensure tinc vpn name directory exists
+  file: >
+    path=/etc/tinc/{{ vpn_name }}/hosts
+    recurse=True
+    state=directory
+
+- name: ensure tinc.conf exists for vpn name
+  template: >
+    src=tinc.conf.j2
+    dest=/etc/tinc/{{ vpn_name }}/tinc.conf
+
+- name: ensure tinc address is properly set in tinc host file
+  lineinfile: >
+    dest=/etc/tinc/{{ vpn_name }}/hosts/{{ ansible_hostname }}
+    line="Address = {{ ansible_eth0.ipv4.address }}"
+    create=yes
+  notify:
+    - restart tinc
+
+- name: ensure subnet ip address is properly set in tinc host file
+  lineinfile: >
+    dest=/etc/tinc/{{ vpn_name }}/hosts/{{ ansible_hostname }}
+    line="Subnet = {{ ansible_local.tinc_facts.vpn_ip }}/32"
+    create=yes
+  notify:
+    - restart tinc
+
+- name: create /etc/tinc/nets.boot file from template
+  template: >
+    src=nets.boot.j2
+    dest=/etc/tinc/nets.boot
+  notify:
+    - restart tinc
+
+- name: create tinc private key
+  shell: tincd -n {{ vpn_name }} -K4096
+  args:
+    creates: /etc/tinc/{{ vpn_name }}/rsa_key.priv
+
+- name: create tinc-up file
+  template: >
+    src=tinc-up.j2
+    dest=/etc/tinc/{{ vpn_name }}/tinc-up
+    mode=0755
+
+- name: create tinc-down file
+  template: >
+    src=tinc-down.j2
+    dest=/etc/tinc/{{ vpn_name }}/tinc-down
+    mode=0755
+  notify:
+    - restart tinc
+
+- name: fetch tinc hosts file after private key creation
+  fetch: >
+    src=/etc/tinc/{{ vpn_name }}/hosts/{{ ansible_hostname }}
+    dest=fetch/{{ ansible_hostname }}
+    flat=yes
+  notify:
+    - restart tinc
+
+- name: ensure the fetched tinc hosts file are place on each server
+  file: >
+    src={{ item }}
+    dest=/etc/tinc/{{vpn_name }}/hosts/{{ item }}
+  with_fileglob:
+    - fetch/*
+  notify:
+    - restart tinc
+
+# so this will unenessearily copy the hosts file but still should be ok
+- name: sync the fetched hosts files on each host
+  synchronize: >
+    src=fetch/
+    dest=/etc/tinc/{{ vpn_name }}/hosts/
+  notify:
+    - restart tinc
+
+# finally ensure tinc is actually running
+- name: ensure tinc is running
+  service: >
+    name=tinc
+    state=started
