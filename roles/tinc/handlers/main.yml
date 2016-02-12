@@ -1,6 +1,6 @@
 ---
 
-- name: restart tinc
+- name: reload tinc
   service: >
     name=tinc
-    state=restarted
+    state=reloaded

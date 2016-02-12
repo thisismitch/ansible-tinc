@@ -1,3 +1,9 @@
 ---
 
-vpn_name: vpnone
+netname: nyc3private
+physical_ip: "{{ ansible_eth1.ipv4.address }}"
+
+vpn_interface: tun0
+
+vpn_netmask: 255.255.255.0
+vpn_cidr_netmask: 32
