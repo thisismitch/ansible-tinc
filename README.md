@@ -1,6 +1,10 @@
-# Tinc
+# Introduction
 
-This sets up a tinc vpn between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
+The primary purpose of this playbook is to secure the private network of DigitalOcean Droplets with tinc VPN. You can use it with any Ubuntu servers that can reach each other over a network.
+
+This sets up a tinc VPN between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
+
+
 
 ## Prerequisites
 
