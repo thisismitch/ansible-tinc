@@ -12,7 +12,7 @@
     src=nets.boot.j2
     dest=/etc/tinc/nets.boot
   notify:
-    - reload tinc
+    - restart tinc
 
 - name: ensure tinc netname directory exists
   file: >
@@ -20,16 +20,20 @@
     recurse=True
     state=directory
 
-- name: ensure tinc.conf exists for netname
+- name: ensure tinc.conf contains connection to all other nodes
   template: >
     src=tinc.conf.j2
     dest=/etc/tinc/{{ netname }}/tinc.conf
+  notify:
+    - reload tinc
 
 - name: create tinc-up file
   template: >
     src=tinc-up.j2
     dest=/etc/tinc/{{ netname }}/tinc-up
     mode=0755
+  notify:
+    - restart tinc
 
 - name: create tinc-down file
   template: >
@@ -37,26 +41,26 @@
     dest=/etc/tinc/{{ netname }}/tinc-down
     mode=0755
   notify:
-    - reload tinc
+    - restart tinc
 
 - name: ensure tinc hosts file binds to physical ip address
   lineinfile: >
-    dest=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
+    dest=/etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
     line="Address = {{ physical_ip }}"
     create=yes
   notify:
-    - reload tinc
+    - restart tinc
 
 - name: ensure subnet ip address is properly set in tinc host file
   lineinfile: >
-    dest=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
+    dest=/etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
     line="Subnet = {{ vpn_ip }}/{{ vpn_cidr_netmask }}"
     create=yes
   notify:
-    - reload tinc
+    - restart tinc
 
-- name: check whether /etc/tinc/netname/hosts/ansible_hostname contains "-----END RSA PUBLIC KEY-----"
-  command: awk '/^-----END RSA PUBLIC KEY-----$/'  /etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
+- name: check whether /etc/tinc/netname/hosts/inventory_hostname contains "-----END RSA PUBLIC KEY-----"
+  command: awk '/^-----END RSA PUBLIC KEY-----$/'  /etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
   changed_when: "public_key.stdout != '-----END RSA PUBLIC KEY-----'"
   register: public_key
 
@@ -72,12 +76,12 @@
   args:
     creates: /etc/tinc/{{ netname }}/rsa_key.priv
   notify:
-    - reload tinc
+    - restart tinc
 
 - name: fetch tinc hosts file after key creation
   fetch: >
-    src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
-    dest=fetch/{{ ansible_hostname }}
+    src=/etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
+    dest=fetch/{{ inventory_hostname }}
     flat=yes
   notify:
     - reload tinc
@@ -89,10 +93,12 @@
   notify:
     - reload tinc
 
-- name: ensure tinc is running
+- name: run handlers
+  meta: flush_handlers
+
+- name: ensure tinc is started
   service: >
     name=tinc
     enabled=yes
     state=started
     pattern=tincd -n {{ netname }}
-

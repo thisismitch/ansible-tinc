@@ -1,5 +1,10 @@
 ---
 
+- name: restart tinc
+  service: >
+    name=tinc
+    state=restarted
+
 - name: reload tinc
   service: >
     name=tinc

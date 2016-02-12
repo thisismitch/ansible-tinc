@@ -1,6 +1,6 @@
 ---
 
-netname: nyc3private
+netname: nyc3
 physical_ip: "{{ ansible_eth1.ipv4.address }}"
 
 vpn_interface: tun0
