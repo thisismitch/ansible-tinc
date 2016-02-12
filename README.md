@@ -1,105 +1,73 @@
 # Tinc
 
-This sets up a tinc vpn between several servers.
+This sets up a tinc vpn between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
 
-## Running
+## Prerequisites
 
-Create a hosts file.
+This playbook is for Ubuntu servers.
 
-```bash
-$ cat hosts
-trusty1 ansible_ssh_host=x.y.z.21
-trusty2 ansible_ssh_host=x.y.z.22
-trusty3 ansible_ssh_host=x.y.z.23
-trusty4 ansible_ssh_host=x.y.z.24
-```
+The default user is `root`. Otherwise, sudo access (passwordless, preferably) is required.
 
-Next up, run ansible.
+By default, this playbook will bind tinc to the IP address on the `eth1` interface (private network interface on DigitalOcean Droplets). See the "Review Group Variables" section to change this.
 
-```bash
-$ ansible-playbook site.yml
-```
+## Preparation
 
-If that completes OK, you should be able to ping all the hosts from all the other hosts on the vpn network.
+### Create Inventory
 
-```bash
-ubuntu@trusty1:~$ ip ro sh
-default via x.y.z.17 dev eth0
-10.0.0.0/24 dev tun0  proto kernel  scope link  src 10.0.0.21
-x.y.z.16/28 dev eth0  proto kernel  scope link  src x.y.z.21
-ubuntu@trusty1:~$ ping -c 1 -w 1 10.0.0.23
-PING 10.0.0.23 (10.0.0.23) 56(84) bytes of data.
-64 bytes from 10.0.0.23: icmp_seq=1 ttl=64 time=0.751 ms
-
---- 10.0.0.23 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.751/0.751/0.751/0.000 ms
-ubuntu@trusty1:~$ ping -c 1 -w 1 10.0.0.24
-PING 10.0.0.24 (10.0.0.24) 56(84) bytes of data.
-64 bytes from 10.0.0.24: icmp_seq=1 ttl=64 time=1.34 ms
-
---- 10.0.0.24 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 1.348/1.348/1.348/0.000 ms
+Create a `/hosts` file with the nodes that you want to include in the VPN:
 
 ```
-
-## ip addressing
-
-There is an ansible custom facts script that creates a vpn ip address based on the last octet of the ip address reported by ```hostname -i``` and that is added to 10.0.0. So, of course this won't work in some situations, eg. if you have two servers with the same last octet. But I didn't want to configure a ```host_vars``` entry for each server (which is the other option). Otherwise I guess you'd need some kind of ip management, such as dhcp running on one of the servers? Man, what a pain ips are. lol.
-
-So in the example below the eth0 ipv4 address is x.y.z.23 so the ```vpn_ip``` becomes 10.0.0.21.
-
-```bash
-$ ansible -m setup trusty1 | grep -A 4 "ansible_local\|ansible_eth0"
-"ansible_eth0": {
-  "active": true,
-  "device": "eth0",
-  "ipv4": {
-    "address": "x.y.z.21",
-    --
-    "ansible_local": {
-      "tinc_facts": {
-        "vpn_ip": "10.0.0.21"
-      }
-    },
-
+prod01 vpn_ip=10.0.0.1 ansible_host=162.243.125.98
+prod02 vpn_ip=10.0.0.2 ansible_host=162.243.243.235
+prod03 vpn_ip=10.0.0.3 ansible_host=162.243.249.86
+prod04 vpn_ip=10.0.0.4 ansible_host=162.243.252.151
 ```
 
-## Network
+- `prod01` is the inventory hostname (how ansible will refer to the host)
+- `vpn_ip` is the IP address that the node will use for the VPN
+- `ansible_host` must be set to a value that your ansible machine can reach the node at
+
+### Review Group Variables
+
+The `/group_vars/all` file contains a few values that you may want to modify.
+
+- `physical_ip` specifies which IP address you want tinc to bind to, based on network interface name. It is set to `eth1` (ansible_eth1) by default. On DigitalOcean, `eth1` is the private network interface so *Private Networking* must be enabled unless you would rather use the public network interface (`eth0`)
+- `netname` specifies the tinc netname
+
+The other variables probably don't need to be modified.
+
+- `tun0` is the virtual network interface that tinc will use
+
+## Set Up Tinc
+
+Run the playbook:
 
 ```bash
-$ ip route show
-default via x.y.z.17 dev eth0
-10.0.0.0/24 dev tun0  proto kernel  scope link  src 10.0.0.22
-x.y.z.16/28 dev eth0  proto kernel  scope link  src x.y.z.22
+ansible-playbook site.yml
 ```
 
-## Running iperf
+After the playbook completes, all of the hosts in the inventory file should be able to communicate with each other over the VPN network.
+
+## Quick Test
+
+Log in to your first host and ping the second host:
 
 ```bash
-ubuntu@trusty2:~$ iperf -s 10.0.0.22
-iperf: ignoring extra argument -- 10.0.0.22
-------------------------------------------------------------
-Server listening on TCP port 5001
-TCP window size: 85.3 KByte (default)
-------------------------------------------------------------
-[  4] local 10.0.0.22 port 5001 connected with 10.0.0.21 port 35705
-[ ID] Interval       Transfer     Bandwidth
-[  4]  0.0-10.1 sec   312 MBytes   260 Mbits/sec
+ping 10.0.0.2
 ```
+
+Or, assuming one of your hosts is named `prod02`, run this:
 
 ```bash
-ubuntu@trusty1:~$ iperf -c 10.0.0.22
-------------------------------------------------------------
-Client connecting to 10.0.0.22, TCP port 5001
-TCP window size: 45.0 KByte (default)
-------------------------------------------------------------
-[  3] local 10.0.0.21 port 35705 connected with 10.0.0.22 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec   312 MBytes   262 Mbits/sec
+ping prod02
 ```
 
-## Todo
+Feel free to test the other nodes.
 
-* Use IPv6 instead?
+## Adding and removing hosts
+
+You may add or remove hosts at any time by updating the hosts file and running the playbook. Note that removed hosts will result in orphaned tinc hosts files and `/etc/hosts` entries
+
+## Running Multiple VPNs
+
+This playbook does not support multiple VPNs but it could be easily extended.
