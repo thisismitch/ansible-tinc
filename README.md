@@ -4,13 +4,11 @@ The primary purpose of this playbook is to secure the private network of Digital
 
 This sets up a tinc VPN between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
 
-
-
 ## Prerequisites
 
 This playbook is for Ubuntu servers.
 
-The default user is `root`. Otherwise, sudo access (passwordless, preferably) is required.
+The default user Ansible will use is `root`—specified in `/ansible.cfg`. Otherwise, sudo access (passwordless, preferably) is required.
 
 By default, this playbook will bind tinc to the IP address on the `eth1` interface (private network interface on DigitalOcean Droplets). See the "Review Group Variables" section to change this.
 
