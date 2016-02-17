@@ -69,7 +69,7 @@
 - name: ensure subnet ip address is properly set in tinc host file
   lineinfile: >
     dest=/etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
-    line="Subnet = {{ vpn_ip }}/{{ vpn_cidr_netmask }}"
+    line="Subnet = {{ vpn_ip }}/{{ vpn_subnet_cidr_netmask }}"
     create=yes
   notify:
     - restart tinc
@@ -111,7 +111,7 @@
 - name: run handlers
   meta: flush_handlers
 
-- name: ensure tinc is started (ubuntu)
+- name: ensure tinc is started
   service: >
     name=tinc
     enabled=yes

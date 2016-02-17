@@ -29,6 +29,8 @@ prod04 vpn_ip=10.0.0.4 ansible_host=162.243.252.151
 - `vpn_ip` is the IP address that the node will use for the VPN
 - `ansible_host` must be set to a value that your ansible machine can reach the node at
 
+**Note:** The inventory hostname, which we are using as each node's name in Tinc, can't contain characters that Tinc doesn't allow for node names. For example, hyphens (`-`) are not allowed.
+
 ### Review Group Variables
 
 The `/group_vars/all` file contains a few values that you may want to modify.
@@ -68,7 +70,7 @@ Feel free to test the other nodes.
 
 ## Adding and removing hosts
 
-You may add or remove hosts at any time by updating the hosts file and running the playbook. Note that removed hosts will result in orphaned tinc hosts files and `/etc/hosts` entries
+You may add or remove hosts at any time by updating the hosts file and running the playbook. Note that removed hosts will result in orphaned tinc hosts files and `/etc/hosts` entries.
 
 ## Running Multiple VPNs
 
