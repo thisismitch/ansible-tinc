@@ -8,7 +8,7 @@ This sets up a tinc VPN between several servers. It also adds /etc/hosts entries
 
 This playbook been tested on Ubuntu 14.04 and CentOS 7 servers.
 
-The default user Ansible will use is `root`—specified in `/ansible.cfg`. Otherwise, sudo access (passwordless, preferably) is required.
+Your local machine (where Ansible is installed) must be able to log in to the remote servers as "root", preferably with passwordless public SSH key, which is specified as the `remote_user` in `/ansible.cfg`. Due to a [bug with the Ansible Synchronize module](https://github.com/ansible/ansible/issues/13825), it is not possible to use a different `remote_user` at this time.
 
 By default, this playbook will bind tinc to the IP address on the `eth1` interface (private network interface on DigitalOcean Droplets). See the "Review Group Variables" section to change this.
 
@@ -25,7 +25,7 @@ prod03 vpn_ip=10.0.0.3 ansible_host=162.243.249.86
 prod04 vpn_ip=10.0.0.4 ansible_host=162.243.252.151
 ```
 
-- `prod01` is the inventory hostname (how ansible will refer to the host)
+- The first column is the inventory hostname, "prod01" in the example, how ansible will refer to the host
 - `vpn_ip` is the IP address that the node will use for the VPN
 - `ansible_host` must be set to a value that your ansible machine can reach the node at
 
