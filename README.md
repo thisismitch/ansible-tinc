@@ -1,12 +1,14 @@
-# Tinc
+# Introduction
 
-This sets up a tinc vpn between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
+The primary purpose of this playbook is to secure the private network of DigitalOcean Droplets with tinc VPN. You can use it with any Ubuntu servers that can reach each other over a network.
+
+This sets up a tinc VPN between several servers. It also adds /etc/hosts entries for the inventory hostnames to resolve to the VPN IP addresses.
 
 ## Prerequisites
 
 This playbook been tested on Ubuntu 14.04 and CentOS 7 servers.
 
-The default user is `root`. Otherwise, sudo access (passwordless, preferably) is required.
+The default user Ansible will use is `root`—specified in `/ansible.cfg`. Otherwise, sudo access (passwordless, preferably) is required.
 
 By default, this playbook will bind tinc to the IP address on the `eth1` interface (private network interface on DigitalOcean Droplets). See the "Review Group Variables" section to change this.
 
