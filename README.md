@@ -36,11 +36,12 @@ prod04 vpn_ip=10.0.0.4 ansible_host=162.243.252.151
 The `/group_vars/all` file contains a few values that you may want to modify.
 
 - `physical_ip` specifies which IP address you want tinc to bind to, based on network interface name. It is set to `eth1` (ansible_eth1) by default. On DigitalOcean, `eth1` is the private network interface so *Private Networking* must be enabled unless you would rather use the public network interface (`eth0`)
-- `netname` specifies the tinc netname
+- `netname` specifies the tinc netname. It's set to `nyc3` by default.
+- `vpn_netmask` specifies the netmask that the will be applied to the VPN interface. By default, it's set to `255.255.255.0`, which means that each `vpn_ip` is a Class C address which can only communicate with other hosts within the same subnet. For example, a `10.0.0.x` will not be able to communicate with a `10.0.1.x` host unless the subnet is enlarged by changing `vpn_netmask` to something like `255.255.0.0`.
 
 The other variables probably don't need to be modified.
 
-- `tun0` is the virtual network interface that tinc will use
+- `vpn_interface` is the virtual network interface that tinc will use. It is `tun0` by default.
 
 ## Set Up Tinc
 
