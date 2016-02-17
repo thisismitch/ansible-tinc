@@ -4,7 +4,7 @@ This sets up a tinc vpn between several servers. It also adds /etc/hosts entries
 
 ## Prerequisites
 
-This playbook is for Ubuntu servers.
+This playbook been tested on Ubuntu 14.04 and CentOS 7 servers.
 
 The default user is `root`. Otherwise, sudo access (passwordless, preferably) is required.
 

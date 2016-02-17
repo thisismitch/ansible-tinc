@@ -1,0 +1,11 @@
+[Unit]
+Description=tinc vpn
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/tincd -n {{ netname }}
+ExecReload=/usr/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

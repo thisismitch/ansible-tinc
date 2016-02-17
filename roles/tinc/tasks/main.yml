@@ -1,11 +1,32 @@
 ---
 
+- name: install epel-release (redhat)
+  yum: >
+    name=epel-release
+    state=latest
+  when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7")
+
 - name: install tinc
-  apt: >
+  package: >
     name=tinc
-    state=present
-    update_cache=yes
-    cache_valid_time=3600
+    state=latest
+
+- name: create tinc systemd service file (redhat)
+  template: >
+    src=tinc.service.j2
+    dest=/etc/systemd/system/tinc.service
+  register: tinc_service_file
+  when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7")
+
+- name: systemctl daemon-reload (redhat)
+  shell: systemctl daemon-reload
+  when: tinc_service_file.changed
+
+- name: ensure tinc netname directory exists
+  file: >
+    path=/etc/tinc/{{ netname }}/hosts
+    recurse=True
+    state=directory
 
 - name: create /etc/tinc/nets.boot file from template
   template: >
@@ -13,12 +34,6 @@
     dest=/etc/tinc/nets.boot
   notify:
     - restart tinc
-
-- name: ensure tinc netname directory exists
-  file: >
-    path=/etc/tinc/{{ netname }}/hosts
-    recurse=True
-    state=directory
 
 - name: ensure tinc.conf contains connection to all other nodes
   template: >
@@ -86,7 +101,7 @@
   notify:
     - reload tinc
 
-- name: sync the fetched hosts files on each host
+- name: sync the fetched tinc hosts files on each host
   synchronize: >
     src=fetch/
     dest=/etc/tinc/{{ netname }}/hosts/
@@ -96,7 +111,7 @@
 - name: run handlers
   meta: flush_handlers
 
-- name: ensure tinc is started
+- name: ensure tinc is started (ubuntu)
   service: >
     name=tinc
     enabled=yes
