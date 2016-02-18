@@ -19,13 +19,18 @@ By default, this playbook will bind tinc to the IP address on the `eth1` interfa
 Create a `/hosts` file with the nodes that you want to include in the VPN:
 
 ```
+[vpn]
 prod01 vpn_ip=10.0.0.1 ansible_host=162.243.125.98
 prod02 vpn_ip=10.0.0.2 ansible_host=162.243.243.235
 prod03 vpn_ip=10.0.0.3 ansible_host=162.243.249.86
 prod04 vpn_ip=10.0.0.4 ansible_host=162.243.252.151
+
+[removevpn]
 ```
 
-- The first column is the inventory hostname, "prod01" in the example, how ansible will refer to the host
+The first line, `[vpn]`, specifies that the host entries directly below it are part of the "vpn" group. Members of this group will have the Tinc mesh VPN configured on them.
+
+- The first column is where you set the inventory name of a host, "node01" in the first line of the example, how Ansible will refer to the host. This value is used to configure Tinc connections, and to generate `/etc/hosts` entries. Do not use hyphens here, as Tinc does not support them in host names
 - `vpn_ip` is the IP address that the node will use for the VPN
 - `ansible_host` must be set to a value that your ansible machine can reach the node at
 
@@ -69,9 +74,44 @@ ping prod02
 
 Feel free to test the other nodes.
 
-## Adding and removing hosts
+## How to Add or Remove Servers
 
-You may add or remove hosts at any time by updating the hosts file and running the playbook. Note that removed hosts will result in orphaned tinc hosts files and `/etc/hosts` entries.
+### Add New Servers
+
+All servers listed in the the `[vpn]` group in the `/hosts` file will be part of the VPN. To add new VPN members, simply add the new servers to the `[vpn]` group then re-run the Playbook:
+
+```command
+ansible-playbook site.yml
+```
+
+### Remove Servers
+
+To remove VPN members, move `/hosts` entries of the servers you want to remove under the `[removevpn]` group towards the bottom of the file.
+
+For example, if we wanted to remove **node04**, the `/hosts` file would look like this:
+
+```
+[label /hosts — remove node04 from VPN]
+[vpn]
+node01 vpn_ip=10.0.0.1 ansible_host=192.0.2.55
+node02 vpn_ip=10.0.0.2 ansible_host=192.0.2.240
+node03 vpn_ip=10.0.0.3 ansible_host=198.51.100.4
+
+[removevpn]
+node04 vpn_ip=10.0.0.4 ansible_host=198.51.100.36
+```
+
+Save the hosts file. Note that the `vpn_ip` is optional and unused for `[removevpn]` group members.
+
+Then re-run the Playbook:
+
+```command
+ansible-playbook site.yml
+```
+
+This will stop Tinc and delete the Tinc configuration and host key files from the members of the `[removevpn]` group.
+
+Note that removing hosts from the VPN will result in orphaned tinc hosts files and /etc/hosts entries on the remaining VPN members. This should not affect anything unless you later add new servers to the VPN but reuse the decommissioned names. Delete the appropriate `/etc/hosts` entries on each server, if this is a problem for you.
 
 ## Running Multiple VPNs
 

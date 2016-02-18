@@ -1,0 +1,18 @@
+---
+
+- name: stop and disable tinc
+  service: >
+    name=tinc
+    enabled=no
+    state=stopped
+    pattern=tincd -n {{ netname }}
+
+- name: delete tinc netname directory
+  file: >
+    path=/etc/tinc/{{ netname }}
+    state=absent
+
+- name: delete nets.boot
+  file: >
+    path=/etc/tinc/nets.boot
+    state=absent
