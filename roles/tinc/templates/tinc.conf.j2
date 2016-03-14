@@ -1,7 +1,7 @@
 Name = {{ inventory_hostname }}
 AddressFamily = ipv4
 Interface = {{ vpn_interface }}
-{% for host in groups['vpn'] %}
+{% for host in play_hosts %}
 {% if inventory_hostname != hostvars[host]['inventory_hostname'] %}
 ConnectTo = {{ hostvars[host]['inventory_hostname'] }}
 {% endif %}
