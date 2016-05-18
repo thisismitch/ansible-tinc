@@ -62,6 +62,7 @@
   lineinfile: >
     dest=/etc/tinc/{{ netname }}/hosts/{{ inventory_hostname }}
     line="Address = {{ physical_ip }}"
+    regexp="Address = \d+.\d+.\d+.\d+"
     create=yes
   notify:
     - restart tinc
