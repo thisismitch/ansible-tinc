@@ -7,12 +7,9 @@
   template: >
     src=tinc.service.j2
     dest=/etc/systemd/system/tinc.service
-  register: tinc_service_file
   when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7")
 
-- name: systemctl daemon-reload (redhat)
-  shell: systemctl daemon-reload
-  when: tinc_service_file.changed
+  notify: ["reload systemctl"]
 
 - name: create tinc unit file (generic)
   template: >
