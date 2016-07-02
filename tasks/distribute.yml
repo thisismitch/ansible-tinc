@@ -1,0 +1,25 @@
+---
+
+- name: cache peer host files locally
+  fetch: >
+    src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
+    dest=fetch/{{ ansible_hostname }}
+    flat=yes
+    fail_on_missing=yes
+
+- name: distribute host config files
+  synchronize: >
+    src=fetch/
+    dest=/etc/tinc/{{ netname }}/hosts/
+
+  notify: ["restart tinc"]
+
+- name: add entries to /etc/hosts for (server) peers
+  lineinfile: >
+    dest=/etc/hosts
+    regexp='.*{{ item }}$'
+    line="{{ hostvars[item].vpn_ip }} {{item}}"
+    state=present
+
+  with_items: "{{ play_hosts }}"
+  when: hostvars[item].vpn_ip is defined

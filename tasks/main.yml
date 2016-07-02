@@ -5,3 +5,6 @@
 
 - name: include configuration tasks
   include: configure.yml
+
+- name: include distribution tasks
+  include: distribute.yml
