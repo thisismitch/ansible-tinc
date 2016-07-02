@@ -31,6 +31,9 @@
 - name: ensure tinc netname directory exists
   file: >
     path=/etc/tinc/{{ netname }}/hosts
+    owner=root
+    group=root
+    mode=0755
     recurse=yes
     state=directory
 
