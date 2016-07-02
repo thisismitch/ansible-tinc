@@ -5,7 +5,7 @@
 
 - name: create tinc systemd service file (redhat)
   template: >
-    src=tinc.service.j2
+    src=templates/tinc.service.j2
     dest=/etc/systemd/system/tinc.service
     owner=root
     group=root
@@ -43,7 +43,7 @@
 
 - name: ensure tinc.conf contains connection to all other nodes
   template: >
-    src=tinc.conf.j2
+    src=templates/tinc.conf.j2
     dest=/etc/tinc/{{ netname }}/tinc.conf
     owner=root
     group=root
