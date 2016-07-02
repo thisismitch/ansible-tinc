@@ -95,7 +95,6 @@
   changed_when: "public_key.stdout != '-----END RSA PUBLIC KEY-----'"
   register: public_key
 
-# this is necessary because the public key will not be generated (non-interactively) if the private key already exists
 - name: delete private key and regenerate keypair if public key is absent from tinc hosts file
   file: >
     path=/etc/tinc/{{ netname }}/rsa_key.priv
