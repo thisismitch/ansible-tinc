@@ -123,6 +123,14 @@
     enabled=yes
     state=started
 
+- name: enable tinc@ service (systemd)
+  service: >
+    name=tinc@{{ netname }}
+    enabled=yes
+    state=started
+
+  when: ansible_service_mgr == "systemd"
+
 - name: add entries to /etc/hosts for (server) peers
   lineinfile: >
     dest=/etc/hosts
