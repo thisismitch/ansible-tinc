@@ -1,11 +1,5 @@
 ---
 
-- name: install epel-release (redhat)
-  yum: >
-    name=epel-release
-    state=latest
-  when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7")
-
 - name: install tinc
   package: >
     name=tinc
