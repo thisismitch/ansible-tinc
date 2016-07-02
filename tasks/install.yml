@@ -25,6 +25,9 @@
   notify: ["reload systemctl"]
   when: ansible_service_mgr == "systemd"
 
+- name: run handlers
+  meta: flush_handlers
+
 - name: ensure tinc netname directory exists
   file: >
     path=/etc/tinc/{{ netname }}/hosts
@@ -118,9 +121,6 @@
     dest=/etc/tinc/{{ netname }}/hosts/
 
   notify: ["reload tinc"]
-
-- name: run handlers
-  meta: flush_handlers
 
 - name: ensure tinc is started
   service: >
