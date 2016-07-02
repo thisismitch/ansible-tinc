@@ -126,7 +126,6 @@
     name=tinc
     enabled=yes
     state=started
-    pattern=tincd -n {{ netname }}
 
 - name: add nodes to /etc/hosts (ansible_inventory resolves to vpn_ip)
   lineinfile: >
