@@ -123,7 +123,7 @@
     enabled=yes
     state=started
 
-- name: add nodes to /etc/hosts (ansible_inventory resolves to vpn_ip)
+- name: add entries to /etc/hosts for (server) peers
   lineinfile: >
     dest=/etc/hosts
     regexp='.*{{ item }}$'
