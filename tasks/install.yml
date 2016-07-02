@@ -27,82 +27,6 @@
 
 - name: run handlers
   meta: flush_handlers
-
-- name: create config directories
-  file: >
-    path=/etc/tinc/{{ netname }}/hosts
-    owner=root
-    group=root
-    mode="u=rwX,g=rX,o=rX"
-    recurse=yes
-    state=directory
-
-- name: configure nets.boot
-  template: >
-    src=nets.boot.j2
-    dest=/etc/tinc/nets.boot
-    owner=root
-    group=root
-    mode=0644
-
-  notify: ["restart tinc"]
-
-- name: configure tinc.conf
-  template: >
-    src=templates/tinc.conf.j2
-    dest=/etc/tinc/{{ netname }}/tinc.conf
-    owner=root
-    group=root
-    mode=0644
-
-  notify: ["reload tinc"]
-
-- name: configure tinc-up script
-  template: >
-    src=tinc-up.j2
-    dest=/etc/tinc/{{ netname }}/tinc-up
-    owner=root
-    group=root
-    mode=0755
-
-  notify: ["restart tinc"]
-
-- name: configure tinc-down script
-  template: >
-    src=tinc-down.j2
-    dest=/etc/tinc/{{ netname }}/tinc-down
-    owner=root
-    group=root
-    mode=0755
-
-  notify: ["restart tinc"]
-
-- name: generate rsa keys
-  expect:
-    command: "/usr/sbin/tincd -n {{ netname }} --generate-keys={{ tinc_rsa_bit_length }}"
-    responses:
-      private: /etc/tinc/{{ netname }}/rsa_key.priv
-      public: /etc/tinc/{{ netname }}/rsa_key.pub
-    creates: /etc/tinc/{{ netname }}/rsa_key.priv
-
-- name: get public key
-  command: cat /etc/tinc/{{ netname }}/rsa_key.pub
-
-  register: tinc_rsa_public_key
-  changed_when: false
-  failed_when: "'-----BEGIN RSA PUBLIC KEY-----' not in tinc_rsa_public_key.stdout"
-
-- name: configure host file
-  template: >
-    src=templates/host.j2
-    dest=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
-    owner=root
-    group=root
-    mode=0644
-
-  notify: ["restart tinc"]
-  failed_when: "'-----BEGIN OLD PUBLIC KEY-----' in tinc_rsa_public_key.stdout"
-
 - name: cache peer host files locally
   fetch: >
     src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
@@ -116,20 +40,6 @@
     dest=/etc/tinc/{{ netname }}/hosts/
 
   notify: ["reload tinc"]
-
-- name: enable tinc service
-  service: >
-    name=tinc
-    enabled=yes
-    state=started
-
-- name: enable tinc@ service (systemd)
-  service: >
-    name=tinc@{{ netname }}
-    enabled=yes
-    state=started
-
-  when: ansible_service_mgr == "systemd"
 
 - name: add entries to /etc/hosts for (server) peers
   lineinfile: >

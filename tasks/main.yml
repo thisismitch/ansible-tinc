@@ -2,3 +2,6 @@
 
 - name: include installation tasks
   include: install.yml
+
+- name: include configuration tasks
+  include: configure.yml
