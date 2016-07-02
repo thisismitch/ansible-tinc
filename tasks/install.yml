@@ -129,6 +129,11 @@
     pattern=tincd -n {{ netname }}
 
 - name: add nodes to /etc/hosts (ansible_inventory resolves to vpn_ip)
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].vpn_ip }} {{item}}" state=present
-  when: hostvars[item].vpn_ip is defined
+  lineinfile: >
+    dest=/etc/hosts
+    regexp='.*{{ item }}$'
+    line="{{ hostvars[item].vpn_ip }} {{item}}"
+    state=present
+
   with_items: "{{ play_hosts }}"
+  when: hostvars[item].vpn_ip is defined
