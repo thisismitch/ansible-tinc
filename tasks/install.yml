@@ -3,7 +3,7 @@
 - name: install tinc
   package: name=tinc state=latest
 
-- name: create tinc systemd service file (redhat)
+- name: create tinc unit file (netname)
   template: >
     src=templates/tinc.service.j2
     dest=/etc/systemd/system/tinc.service
@@ -31,7 +31,7 @@
 - name: ensure tinc netname directory exists
   file: >
     path=/etc/tinc/{{ netname }}/hosts
-    recurse=True
+    recurse=yes
     state=directory
 
 - name: create /etc/tinc/nets.boot file from template
