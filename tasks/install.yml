@@ -108,6 +108,7 @@
     src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
     dest=fetch/{{ ansible_hostname }}
     flat=yes
+    fail_on_missing=yes
 
 - name: sync the fetched tinc hosts files on each host
   synchronize: >
