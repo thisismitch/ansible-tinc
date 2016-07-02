@@ -7,6 +7,9 @@
   template: >
     src=tinc.service.j2
     dest=/etc/systemd/system/tinc.service
+    owner=root
+    group=root
+    mode=0644
 
   notify: ["reload systemctl"]
   when: ansible_service_mgr == "systemd"
@@ -32,6 +35,9 @@
   template: >
     src=nets.boot.j2
     dest=/etc/tinc/nets.boot
+    owner=root
+    group=root
+    mode=0644
 
   notify: ["restart tinc"]
 
@@ -39,6 +45,9 @@
   template: >
     src=tinc.conf.j2
     dest=/etc/tinc/{{ netname }}/tinc.conf
+    owner=root
+    group=root
+    mode=0644
 
   notify: ["reload tinc"]
 
@@ -46,6 +55,8 @@
   template: >
     src=tinc-up.j2
     dest=/etc/tinc/{{ netname }}/tinc-up
+    owner=root
+    group=root
     mode=0755
 
   notify: ["restart tinc"]
@@ -54,6 +65,8 @@
   template: >
     src=tinc-down.j2
     dest=/etc/tinc/{{ netname }}/tinc-down
+    owner=root
+    group=root
     mode=0755
 
   notify: ["restart tinc"]
