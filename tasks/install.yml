@@ -22,6 +22,17 @@
   shell: systemctl daemon-reload
   when: tinc_service_file.changed
 
+- name: create tinc unit file (generic)
+  template: >
+    src=templates/tinc@.service.j2
+    dest=/etc/systemd/system/tinc@.service
+    owner=root
+    group=root
+    mode=0644
+
+  notify: ["reload systemctl"]
+  when: ansible_service_mgr == "systemd"
+
 - name: ensure tinc netname directory exists
   file: >
     path=/etc/tinc/{{ netname }}/hosts

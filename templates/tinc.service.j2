@@ -1,11 +1,18 @@
+{{ ansible_managed | comment }}
+
+# allows stop, start, and reload commands to propagate
+# to all tinc@ service instances
+
 [Unit]
-Description=tinc vpn
+Description=Tinc VPN
 After=network.target
 
 [Service]
-Type=forking
-ExecStart=/usr/sbin/tincd -n {{ netname }}
-ExecReload=/usr/bin/kill -HUP $MAINPID
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecReload=/bin/true
+WorkingDirectory=/etc/tinc
 
 [Install]
 WantedBy=multi-user.target
