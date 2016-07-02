@@ -77,44 +77,37 @@
 
   notify: ["restart tinc"]
 
-- name: ensure tinc hosts file binds to physical ip address
-  lineinfile: >
+- name: generate rsa keys
+  expect:
+    command: "/usr/sbin/tincd -n {{ netname }} --generate-keys={{ tinc_rsa_bit_length }}"
+    responses:
+      private: /etc/tinc/{{ netname }}/rsa_key.priv
+      public: /etc/tinc/{{ netname }}/rsa_key.pub
+    creates: /etc/tinc/{{ netname }}/rsa_key.priv
+
+- name: get public key
+  command: cat /etc/tinc/{{ netname }}/rsa_key.pub
+
+  register: tinc_rsa_public_key
+  changed_when: false
+  failed_when: "'-----BEGIN RSA PUBLIC KEY-----' not in tinc_rsa_public_key.stdout"
+
+- name: configure host file
+  template: >
+    src=templates/host.j2
     dest=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
-    line="Address = {{ physical_ip }}"
-    create=yes
+    owner=root
+    group=root
+    mode=0644
 
   notify: ["restart tinc"]
-
-- name: ensure subnet ip address is properly set in tinc host file
-  lineinfile: >
-    dest=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
-    line="Subnet = {{ vpn_ip }}/{{ vpn_subnet_cidr_netmask }}"
-    create=yes
-
-  notify: ["restart tinc"]
-
-- name: check whether /etc/tinc/netname/hosts/ansible_hostname contains "-----END RSA PUBLIC KEY-----"
-  command: awk '/^-----END RSA PUBLIC KEY-----$/'  /etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
-  changed_when: "public_key.stdout != '-----END RSA PUBLIC KEY-----'"
-  register: public_key
-
-- name: delete private key and regenerate keypair if public key is absent from tinc hosts file
-  file: >
-    path=/etc/tinc/{{ netname }}/rsa_key.priv
-    state=absent
-  when: public_key.changed
-
-- name: create tinc private key (and append public key to tincd hosts file)
-  shell: tincd -n {{ netname }} -K4096 creates=/etc/tinc/{{ netname }}/rsa_key.priv
-
-  notify: ["restart tinc"]
+  failed_when: "'-----BEGIN OLD PUBLIC KEY-----' in tinc_rsa_public_key.stdout"
 
 - name: fetch tinc hosts file after key creation
   fetch: >
     src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
     dest=fetch/{{ ansible_hostname }}
     flat=yes
-
   notify: ["reload tinc"]
 
 - name: sync the fetched tinc hosts files on each host
