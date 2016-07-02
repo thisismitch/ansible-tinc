@@ -3,7 +3,7 @@
 - name: install tinc
   package: name=tinc state=latest
 
-- name: create tinc unit file (netname)
+- name: create tinc unit file
   template: >
     src=templates/tinc.service.j2
     dest=/etc/systemd/system/tinc.service
@@ -14,7 +14,7 @@
   notify: ["reload systemctl"]
   when: ansible_service_mgr == "systemd"
 
-- name: create tinc unit file (generic)
+- name: create tinc unit file (instance)
   template: >
     src=templates/tinc@.service.j2
     dest=/etc/systemd/system/tinc@.service
@@ -28,7 +28,7 @@
 - name: run handlers
   meta: flush_handlers
 
-- name: ensure tinc netname directory exists
+- name: create config directories
   file: >
     path=/etc/tinc/{{ netname }}/hosts
     owner=root
@@ -37,7 +37,7 @@
     recurse=yes
     state=directory
 
-- name: create /etc/tinc/nets.boot file from template
+- name: configure nets.boot
   template: >
     src=nets.boot.j2
     dest=/etc/tinc/nets.boot
@@ -47,7 +47,7 @@
 
   notify: ["restart tinc"]
 
-- name: ensure tinc.conf contains connection to all other nodes
+- name: configure tinc.conf
   template: >
     src=templates/tinc.conf.j2
     dest=/etc/tinc/{{ netname }}/tinc.conf
@@ -57,7 +57,7 @@
 
   notify: ["reload tinc"]
 
-- name: create tinc-up file
+- name: configure tinc-up script
   template: >
     src=tinc-up.j2
     dest=/etc/tinc/{{ netname }}/tinc-up
@@ -67,7 +67,7 @@
 
   notify: ["restart tinc"]
 
-- name: create tinc-down file
+- name: configure tinc-down script
   template: >
     src=tinc-down.j2
     dest=/etc/tinc/{{ netname }}/tinc-down
@@ -103,21 +103,21 @@
   notify: ["restart tinc"]
   failed_when: "'-----BEGIN OLD PUBLIC KEY-----' in tinc_rsa_public_key.stdout"
 
-- name: fetch tinc hosts file after key creation
+- name: cache peer host files locally
   fetch: >
     src=/etc/tinc/{{ netname }}/hosts/{{ ansible_hostname }}
     dest=fetch/{{ ansible_hostname }}
     flat=yes
     fail_on_missing=yes
 
-- name: sync the fetched tinc hosts files on each host
+- name: distribute host config files
   synchronize: >
     src=fetch/
     dest=/etc/tinc/{{ netname }}/hosts/
 
   notify: ["reload tinc"]
 
-- name: ensure tinc is started
+- name: enable tinc service
   service: >
     name=tinc
     enabled=yes
