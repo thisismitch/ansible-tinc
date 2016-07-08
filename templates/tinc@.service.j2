@@ -1,0 +1,19 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Tinc net %i
+PartOf=tinc.service
+ReloadPropagatedFrom=tinc.service
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/tinc/%i
+ExecStart=/usr/sbin/tincd --net %i --no-detach --debug={{ tinc_debug_level }}
+ExecReload=/usr/sbin/tincd --net %i --kill HUP
+ExecStop=/usr/sbin/tincd --net %i --kill
+TimeoutStopSec=5
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=tinc.service

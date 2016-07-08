@@ -1,0 +1,48 @@
+---
+
+- name: install tinc
+  package: name=tinc state=latest
+
+- name: create tinc unit file
+  template: >
+    src=templates/tinc.service.j2
+    dest=/etc/systemd/system/tinc.service
+    owner=root
+    group=root
+    mode=0644
+
+  notify: ["reload systemctl"]
+  when: ansible_service_mgr == "systemd"
+
+- name: create tinc logs directory
+  file: >
+    path={{ tinc_logs_directory }}
+    owner=root
+    group=root
+    mode=0755
+    state=directory
+
+- name: create tinc unit file (instance)
+  template: >
+    src=templates/tinc@.service.j2
+    dest=/etc/systemd/system/tinc@.service
+    owner=root
+    group=root
+    mode=0644
+
+  notify: ["reload systemctl"]
+  when: ansible_service_mgr == "systemd"
+
+- name: run handlers
+  meta: flush_handlers
+
+- name: create init script (upstart)
+  template: >
+    src=templates/upstart.conf.j2
+    dest=/etc/init/tinc.conf
+    owner=root
+    group=root
+    mode=0644
+    force=no
+
+  when: (ansible_service_mgr == "upstart")

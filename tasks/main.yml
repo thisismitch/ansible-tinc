@@ -1,0 +1,13 @@
+---
+
+- name: include installation tasks
+  include: install.yml
+  tags: ["tinc:install", "install"]
+
+- name: include configuration tasks
+  include: configure.yml
+  tags: ["tinc:configure", "configure"]
+
+- name: include distribution tasks
+  include: distribute.yml
+  tags: ["tinc:distribute", "distribute"]

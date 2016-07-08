@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+
+Address = {{ physical_ip }}
+Subnet = {{ vpn_ip }}/{{ vpn_subnet_cidr_netmask }}
+
+{{ tinc_rsa_public_key.stdout }}
