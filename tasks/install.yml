@@ -14,6 +14,14 @@
   notify: ["reload systemctl"]
   when: ansible_service_mgr == "systemd"
 
+- name: create tinc logs directory
+  file: >
+    path={{ tinc_logs_directory }}
+    owner=root
+    group=root
+    mode=0755
+    state=directory
+
 - name: create tinc unit file (instance)
   template: >
     src=templates/tinc@.service.j2
