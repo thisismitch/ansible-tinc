@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on stopping network-services
+
+author "Devyn Spencer"
+description "Tinc VPN"
+version "0.1"
+
+respawn
+
+exec /usr/sbin/tincd --no-detach --net="{{ netname }}" --logfile="{{ tinc_logs_directory }}/{{ netname }}.log"
+  {%- if tinc_debug_level is defined -%}
+  --debug={{ tinc_debug_level }}
+  {% endif %}

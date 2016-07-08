@@ -35,3 +35,14 @@
 
 - name: run handlers
   meta: flush_handlers
+
+- name: create init script (upstart)
+  template: >
+    src=templates/upstart.conf.j2
+    dest=/etc/init/tinc.conf
+    owner=root
+    group=root
+    mode=0644
+    force=no
+
+  when: (ansible_service_mgr == "upstart")
