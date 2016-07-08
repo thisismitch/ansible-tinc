@@ -8,9 +8,9 @@ ReloadPropagatedFrom=tinc.service
 [Service]
 Type=simple
 WorkingDirectory=/etc/tinc/%i
-ExecStart=/usr/sbin/tincd -n %i -D
-ExecReload=/usr/sbin/tincd -n %i -kHUP
-ExecStop=/usr/sbin/tincd -n %i -k
+ExecStart=/usr/sbin/tincd --net %i --no-detach --debug={{ tinc_debug_level }}
+ExecReload=/usr/sbin/tincd --net %i --kill HUP
+ExecStop=/usr/sbin/tincd --net %i --kill
 TimeoutStopSec=5
 Restart=always
 RestartSec=60

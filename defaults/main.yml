@@ -13,3 +13,5 @@ vpn_subnet_cidr_netmask: 32
 tinc_rsa_bit_length: 4096
 
 tinc_logs_directory: /var/log/tinc
+
+tinc_debug_level: 3
